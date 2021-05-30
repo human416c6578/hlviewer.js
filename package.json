@@ -37,7 +37,7 @@
     "typescript": "^2.9.2",
     "webpack": "^4.16.3",
     "webpack-cli": "^3.1.0",
-    "webpack-node-externals": "^1.7.2"
+    "webpack-node-externals": "^3.0.0"
   },
   "files": [
     "dist/hlviewer.js"
