@@ -12,14 +12,13 @@
   version "2.4.5"
   resolved "https://registry.yarnpkg.com/@types/gl-matrix/-/gl-matrix-2.4.5.tgz#80630d88fb74ff8897a2a2855a8a700e6ee19d3e"
   integrity sha512-0L8Mq1+oaIW0oVzGUDbSW+HnTjCNb4CmoIQE5BkoHt/A7x20z0MJ1PnwfH3atty/vbWLGgvJwVu2Mz3SKFiEFw==
-=======
+  
 "@types/gl-matrix@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@types/gl-matrix/-/gl-matrix-3.2.0.tgz#a62e0f26be4ab6fa55284a29eec631c8641438a1"
   integrity sha512-CY4JAtSOGQX7rVgqVuOk7ZfaLv8VeadDMPj3smMOy8Hp/YiHONa3Mr0mEUgbo0eEwV7+Owpf6BwspcA7hv4NXg==
   dependencies:
     gl-matrix "*"
-
 
 "@types/node@*":
   version "12.7.2"
