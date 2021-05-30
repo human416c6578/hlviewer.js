@@ -43,7 +43,7 @@
     "dist/hlviewer.js"
   ],
   "dependencies": {
-    "gl-matrix": "^2.7.1",
+    "gl-matrix": "^3.3.0",
     "nanoevents": "^5.1.10",
     "preact": "^8.5.2",
     "typestyle": "^2.0.4"
