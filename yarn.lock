@@ -2549,9 +2549,9 @@ nan@^2.12.1:
   integrity sha512-INOFj37C7k3AfaNTtX8RhsTw7qRy7eLET14cROi9+5HAVbbHuIWUHEauBv5qT4Av2tWasiTY1Jw6puUNqRJXQg==
 
 nanoevents@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/nanoevents/-/nanoevents-6.0.0.tgz#82454023f448a1eab0df103df59d5813ac16035b"
-  integrity sha512-0ASElaiZR21yBjhmBiRboCXeNirfIVuiKIxikn6a3H/9zUL+q2HBq+4B3Cb2UdCctoGx5YSwxTXypslD/olJKA==
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/nanoevents/-/nanoevents-6.0.1.tgz#4e49e895953d15a7ba06187d7a5fcd148abde990"
+  integrity sha512-pV++eMfEBTnNQgtzW93LfVezbA1BPaPSgIgyK+ZskLSEEKjHThs4Pp2UqfOjI+EFD3UkVYbwmpxf1WSSX0ALzA==
 
 nanoid@3.1.23:
   version "3.1.23"
