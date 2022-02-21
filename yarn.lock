@@ -1242,10 +1242,10 @@ crypto-browserify@^3.11.0:
     randombytes "^2.0.0"
     randomfill "^1.0.3"
 
-csstype@2.6.9:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/csstype/-/csstype-2.6.9.tgz#05141d0cd557a56b8891394c1911c40c8a98d098"
-  integrity sha512-xz39Sb4+OaTsULgUERcCk+TJj8ylkL4aSVDQiX/ksxbELSqwkgt4d4RD7fovIdgJGSuNYqwZEiVjYY5l0ask+Q==
+csstype@3.0.10:
+  version "3.0.10"
+  resolved "https://registry.yarnpkg.com/csstype/-/csstype-3.0.10.tgz#2ad3a7bed70f35b965707c092e5f30b327c290e5"
+  integrity sha512-2u44ZG2OcNUO9HDp/Jl8C07x6pU/eTR3ncV91SiK3dhG9TWvRVsCoJw14Ckx5DgWkzGA3waZWO3d7pgqpUI/XA==
 
 cyclist@~0.2.2:
   version "0.2.2"
@@ -3660,11 +3660,11 @@ typescript@^3.9.9:
   integrity sha512-w6fIxVE/H1PkLKcCPsFqKE7Kv7QUwhU8qQY2MueZXWx5cPZdwFupLgKK3vntcK98BtNHZtAF4LA/yl2a7k8R6Q==
 
 typestyle@^2.0.4:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/typestyle/-/typestyle-2.2.0.tgz#0b89231c405dda47e5acdcc2c33143ec7257134a"
-  integrity sha512-2lfoH6Wp0B2fhEwy+aXzRxAaLEz/JLKUKmlttYT2yYSZhoyI2MEgv5iQjvtIBu5q/EwyqTNuYcoL1Mioqv7dsA==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/typestyle/-/typestyle-2.3.0.tgz#eff768918d5799d12009ec1543369b76b7e5c3ce"
+  integrity sha512-JZd1R5cWxRvwXzPAKVFsbxO/QjDkFeQlqGF6ZxR7IREEXyFQrf1f1mmlx5EynOTItLLx4aBbcVpCH+CDsl5ZTw==
   dependencies:
-    csstype "2.6.9"
+    csstype "3.0.10"
     free-style "3.1.0"
 
 union-value@^1.0.0:
