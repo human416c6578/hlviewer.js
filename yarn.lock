@@ -20,9 +20,9 @@
   integrity sha512-LT+OIXpp2kj4E2S/p91BMe+VgGX2+lfO+XTpfXhh+bCk2LkQtHZSub8ewFBMGP5ClysPjTDFa4sMI8Q3n4T0wg==
 
 "@types/pngjs@^6.0.0":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@types/pngjs/-/pngjs-6.0.1.tgz#c711ec3fbbf077fed274ecccaf85dd4673130072"
-  integrity sha512-J39njbdW1U/6YyVXvC9+1iflZghP8jgRf2ndYghdJb5xL49LYDB+1EuAxfbuJ2IBbWIL3AjHPQhgaTxT3YaYeg==
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@types/pngjs/-/pngjs-6.0.2.tgz#05104117ce2ab3e8091fac285615ab45ae4666e7"
+  integrity sha512-GO2/2guBQrrb4g+93j55VR30xaMCgmSXa/ifPbHS5MgheDRJy5x12fFB61Hn0juCo+VBFhYMFkJd6CBt8HRx4w==
   dependencies:
     "@types/node" "*"
 
