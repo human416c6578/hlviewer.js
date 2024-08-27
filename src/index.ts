@@ -38,7 +38,7 @@ namespace HLViewer {
     if (result.status === 'success') {
       const game = result.game
       const ui = new PlayerInterface(game, node)
-
+      
       ui.draw()
       game.draw()
 

@@ -555,21 +555,23 @@ export class WorldScene {
               entity.origin[2]
             )
           : vec3.create()
+        vec3.add(origin, origin, vec3.fromValues(
+          model.origin[0],
+          model.origin[1],
+          model.origin[2]
+        ))
 
-        const modelOrigin: vec3 = new Float32Array(model.origin);
-        vec3.add(origin, origin, modelOrigin)
+        const pitch = angles[0];
+        const yaw = angles[1];
+        const roll = angles[2];
 
         // TODO: this seems to work, but needs further research
         mat4.identity(mmx)
         mat4.translate(mmx, mmx, origin)
-        // mat4.rotateY(mmx, mmx, (angles[0] * Math.PI) / 180) // dunno this
-        mat4.rotateZ(mmx, mmx, (angles[1] * Math.PI) / 180)
-        mat4.rotateX(
-          this.modelMatrix,
-          this.modelMatrix,
-          (angles[2] * Math.PI) / 180
-        )
-        shader.setModelMatrix(gl, this.modelMatrix)
+        mat4.rotateX(mmx, mmx, (yaw * Math.PI) / 180) // dunno this
+        mat4.rotateY(mmx, mmx, (pitch * Math.PI) / 180)
+        mat4.rotateZ(mmx, mmx, (roll * Math.PI) / 180)
+        shader.setModelMatrix(gl, mmx)
 
         for (let j = 0; j < model.faces.length; ++j) {
           const face = model.faces[j]

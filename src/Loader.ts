@@ -318,6 +318,10 @@ export class Loader {
     item.done(sprite)
     this.events.emit('load', item)
     this.checkStatus()
+      
+
+    
+    
   }
 
   async loadSky(name: string) {
