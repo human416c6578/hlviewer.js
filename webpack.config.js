@@ -1,26 +1,25 @@
-const fs = require('fs')
-const path = require('path')
-const webpack = require('webpack')
-const MinifyPlugin = require('babel-minify-webpack-plugin')
-const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin
+const fs = require('fs');
+const path = require('path');
+const webpack = require('webpack');
+const TerserPlugin = require('terser-webpack-plugin');
+const packageJson = require('./package.json');
 
-const license = fs.readFileSync('LICENSE', 'utf8')
+const license = fs.readFileSync('LICENSE', 'utf8');
 
-const isProduction = process.env.NODE_ENV === 'production'
+const isProduction = process.env.NODE_ENV === 'production';
 
-const plugins = []
-if (isProduction) {
-  plugins.push(new MinifyPlugin())
-}
-plugins.push(
-  new CheckerPlugin(),
+const plugins = [
   new webpack.BannerPlugin({
     banner: license
   }),
   new webpack.DefinePlugin({
-    VERSION: JSON.stringify(require('./package.json').version)
+    VERSION: JSON.stringify(packageJson.version)
   })
-)
+];
+
+if (isProduction) {
+  plugins.push(new TerserPlugin());
+}
 
 module.exports = {
   mode: isProduction ? 'production' : 'development',
@@ -31,21 +30,18 @@ module.exports = {
     library: 'HLViewer',
     libraryTarget: 'umd'
   },
-  devtool: isProduction ? 'source-map' : 'none',
+  devtool: isProduction ? 'source-map' : 'eval-source-map', // Corrected devtool option
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         include: [path.resolve(__dirname, './src')],
-        use: { loader: 'awesome-typescript-loader' }
+        use: { loader: 'ts-loader' }
       }
     ]
   },
   resolve: {
     extensions: ['.js', '.ts', '.tsx', '.jsx']
   },
-  plugins,
-  node: {
-    fs: 'empty'
-  }
-}
+  plugins
+};

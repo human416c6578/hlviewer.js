@@ -41,7 +41,7 @@ export class TimeLine extends Component<TimeLineProps, TimeLineState> {
   onPostUpdate = () => {
     const player = this.props.game.player
     this.setState({
-      progress: player.currentTime / player.replay.length
+      progress: player.currentFrame / player.replay.data.frames.length
     })
   }
 

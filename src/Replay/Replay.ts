@@ -1,4 +1,5 @@
 import { ReplayMap } from './ReplayMap'
+import { InfoFrame, ReplayCustomMap } from './ReplayCustomMap'
 import { ReplayChunk } from './ReplayChunk'
 import { ReplayState } from './ReplayState'
 import { Reader, ReaderDataType } from '../Reader'
@@ -535,6 +536,50 @@ export class Replay {
     }
 
     return new Replay(header, directories)
+  }
+
+
+  static parseCustomFile(buffer: String) {
+    const data = new ReplayCustomMap();
+    const lines = buffer.trim().split('\n');
+
+    // Parse header
+    const headerLine = lines.shift(); // Remove and get the first line
+    if (headerLine && headerLine.startsWith('HEADER')) {
+      const headerRegex = /"[^"]*"|\S+/g;
+      const matches = headerLine.match(headerRegex);
+      if (matches) {
+        matches.map(match => match.replace(/^"|"$/g, ''));
+        data.header = {
+          identifier: matches[1],
+          timestamp: matches[2],
+          additionalInfo: matches[3],
+        };
+        data.time = data.convertTimestamp(matches[2]);
+      }
+    }
+
+    // Parse frames
+    lines.forEach(line => {
+      if (line.startsWith('INFO')) {
+        const parts = line.split(/\s+/).slice(1); // Skip 'INFO' and split by whitespace
+        const frame: InfoFrame = {
+          origin: [parseFloat(parts[0]), parseFloat(parts[1]), parseFloat(parts[2])],
+          rotation: [parseFloat(parts[3]), parseFloat(parts[4]), parseFloat(parts[5])],
+          velocity: [parseFloat(parts[6]), parseFloat(parts[7]), parseFloat(parts[8])],
+          buttons: parseInt(parts[9], 10),
+          gravity: parseFloat(parts[10]),
+          fps: parseFloat(parts[11]),
+          strafes: parseInt(parts[12], 10),
+          sync: parseInt(parts[13], 10),
+        };
+        data.addFrame(frame);
+      }
+    });
+
+    console.log("FINISH LOADING!");
+    return {data};
+   
   }
 
   static parseIntoChunks(buffer: ArrayBuffer) {

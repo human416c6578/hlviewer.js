@@ -555,7 +555,9 @@ export class WorldScene {
               entity.origin[2]
             )
           : vec3.create()
-        vec3.add(origin, origin, model.origin)
+
+        const modelOrigin: vec3 = new Float32Array(model.origin);
+        vec3.add(origin, origin, modelOrigin)
 
         // TODO: this seems to work, but needs further research
         mat4.identity(mmx)

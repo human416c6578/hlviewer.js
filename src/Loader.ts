@@ -167,7 +167,7 @@ export class Loader {
 
   load(name: string) {
     const extension = extname(name)
-    if (extension === '.dem') {
+    if (extension === '.dem' || extension === '.rec') {
       this.loadReplay(name)
     } else if (extension === '.bsp') {
       this.loadMap(name)
@@ -191,7 +191,8 @@ export class Loader {
     const replayPath = this.config.getReplaysPath()
     const buffer = await xhr(`${replayPath}/${name}`, {
       method: 'GET',
-      isBinary: true,
+      // rec file is not binary
+      isBinary: false,
       progressCallback
     }).catch((err: any) => {
       if (this.replay) {
@@ -204,10 +205,15 @@ export class Loader {
       return
     }
 
-    const replay = await Replay.parseIntoChunks(buffer)
+    // We can't use this function, need to create a new one to parse custom format replay
+    //const replay = await Replay.parseIntoChunks(buffer)
+    const replay = await Replay.parseCustomFile(buffer);
     this.replay.done(replay)
 
-    this.loadMap(replay.maps[0].name + '.bsp')
+
+    // We can't get map info from the custom replay file
+
+    /*this.loadMap(replay.maps[0].name + '.bsp')
 
     const sounds = replay.maps[0].resources.sounds
     sounds.forEach((sound: any) => {
@@ -215,6 +221,7 @@ export class Loader {
         this.loadSound(sound.name, sound.index)
       }
     })
+      */
 
     this.events.emit('load', this.replay)
     this.checkStatus()
