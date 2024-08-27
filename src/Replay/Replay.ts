@@ -549,13 +549,13 @@ export class Replay {
       const headerRegex = /"[^"]*"|\S+/g;
       const matches = headerLine.match(headerRegex);
       if (matches) {
-        matches.map(match => match.replace(/^"|"$/g, ''));
+        let values = matches.map(match => match.replace(/"/g, ''));
         data.header = {
-          identifier: matches[1],
-          timestamp: matches[2],
-          additionalInfo: matches[3],
+          identifier: values[1],
+          timestamp: values[2],
+          additionalInfo: values[3],
         };
-        data.time = data.convertTimestamp(matches[2]);
+        data.time = data.convertTimestamp(values[2]);
       }
     }
 

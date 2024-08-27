@@ -59,7 +59,7 @@ function parseTimeToMilliseconds(timeString: string): number {
   const [minutesStr, secondsStr] = cleanedString.split(':');
 
   // Extract minutes and seconds from the split parts
-  const minutes = parseInt(minutesStr.replace('"', ''), 10);
+  const minutes = parseInt(minutesStr, 10);
   const [seconds, millisecondsStr] = secondsStr.split('.');
 
   // Convert seconds and milliseconds to numbers
