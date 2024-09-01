@@ -52,6 +52,34 @@ export const RootStyle = stylesheet({
     opacity: 1
   },
 
+  keysVisible: {
+    pointerEvents: 'none',
+    position: 'absolute' as 'absolute',
+    top: '70%',
+    left: '50%',
+    zIndex: 20,
+    color: 'rgba(50, 130, 255, 1.0)',
+    fontSize: '12pt',
+    fontWeight: 'bold',
+    fontFamily: `'Roboto', Arial, Helvetica, sans-serif`,
+    opacity: 1,
+    transition: 'opacity 0.2s',
+    transform: 'translate(-50%, -50%)',
+    textAlign: 'center'
+  },
+
+  modelVisible: {
+    pointerEvents: 'none',
+    position: 'absolute' as 'absolute',
+    left: '50%',
+    bottom: 0,
+    width: '65%',
+    zIndex: 11,
+    opacity: 1,
+    transform: 'translate(-50%, 0%)',
+  },
+
+
   controls: {
     ...controlsStyle()
   },

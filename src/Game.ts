@@ -99,6 +99,18 @@ export class Game {
   readonly timeStep: number = 1 / 60
 
   title: string = ''
+  
+  speed: string = ''
+  fps: string = ''
+  buttons: string = ''
+  strafes: string = ''
+  gravity: number = 1
+
+  isSpeedVisible: boolean = true
+  isFpsVisible: boolean = false
+  isButtonsVisible: boolean = false
+  isStrafesVisible: boolean = false
+
   mode: PlayerMode
   pointerLocked: boolean = false
 
@@ -210,11 +222,49 @@ export class Game {
   changeMode(mode: PlayerMode) {
     this.mode = mode
     this.events.emit('modechange', mode)
+
+    if(mode === PlayerMode.FREE) {
+      this.isSpeedVisible = false
+      this.isFpsVisible = false
+      this.isButtonsVisible = false
+      this.isStrafesVisible = false
+    }
+    else if(mode === PlayerMode.REPLAY)
+      this.isSpeedVisible = true
   }
 
   setTitle(title: string) {
     this.title = title
     this.events.emit('titlechange', title)
+  }
+
+  setSpeed(speed: string) {
+    this.speed = speed
+    this.events.emit('speedchange', speed)
+  }
+
+  setFps(fps: string) {
+    this.fps = fps
+    this.events.emit('fpschange', fps)
+  }
+
+  setButtons(buttons: string) {
+    this.buttons = buttons
+    this.events.emit('buttonschange', buttons)
+  }
+
+  setStrafes(strafes: string) {
+    this.strafes = strafes
+    this.events.emit('strafeschange', strafes)
+  }
+
+  setGravity(gravity: number) {
+    this.gravity = gravity
+    let gravityStr = '';
+    if(gravity === 1)
+      gravityStr = 'usp';
+    else gravityStr = 'knife';
+    this.events.emit('gravitychange', gravityStr)
   }
 
   getTitle() {
@@ -348,7 +398,7 @@ export class Game {
       const KEY_S = Keyboard.KEYS.S
       const KEY_A = Keyboard.KEYS.A
       const KEY_D = Keyboard.KEYS.D
-      const downKey = Keyboard.KEYS.C
+      const downKey = Keyboard.KEYS.CTRL
       const upKey = Keyboard.KEYS.SPACE
       if (keyboard.keys[KEY_W] !== keyboard.keys[KEY_S]) {
         if (keyboard.keys[KEY_W]) {

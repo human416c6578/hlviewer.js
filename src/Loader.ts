@@ -340,6 +340,7 @@ export class Loader {
       isBinary: true,
       progressCallback
     }).catch((err: any) => {
+      console.log(`Missing ${skiesPath}/${name}.tga`);
       item.error()
       this.events.emit('error', err, item)
       this.checkStatus()
@@ -371,6 +372,7 @@ export class Loader {
       isBinary: true,
       progressCallback
     }).catch((err: any) => {
+      console.log(`Missing ${wadsPath}/${name}.tga`);
       wadItem.error()
       this.events.emit('error', err, wadItem)
       this.checkStatus()

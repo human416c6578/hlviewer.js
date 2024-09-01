@@ -5,6 +5,14 @@ import { Replay } from './Replay/Replay'
 import { ReplayState } from './Replay/ReplayState'
 import { Vector3 } from './Replay/ReplayCustomMap'
 
+const IN_JUMP = 1 << 1;
+const IN_DUCK = 1 << 2;
+const IN_FORWARD = 1 << 3;
+const IN_BACK = 1 << 4;
+const IN_MOVELEFT = 1 << 9;
+const IN_MOVERIGHT = 1 << 10;
+
+
 const updateGame = (game: Game, state: ReplayState) => {
   game.camera.position[0] = state.cameraPos[0]
   game.camera.position[1] = state.cameraPos[1]
@@ -19,6 +27,9 @@ export class ReplayPlayer {
   state: ReplayState
   replay: any
   events: EventEmitter
+
+  oldButtons: number = 0
+  oldGravity: number = 0
 
   prevFrame: number = 0
   nextFrame: number = 0
@@ -116,6 +127,26 @@ export class ReplayPlayer {
         this.prevFrame = this.currentFrame;
         this.nextFrame = this.currentFrame + 1;
 
+        const currentFrameData = this.replay.data.frames[this.currentFrame];
+        const { velocity, fps, buttons, strafes, sync, gravity } = currentFrameData;
+        const speed = Math.round(Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2 + velocity[2] ** 2)).toString();
+        
+        
+        this.game.setSpeed(speed);
+        this.game.setFps(fps);
+
+        if(gravity !== this.oldGravity){
+          this.game.setGravity(gravity)
+        }
+
+        if(buttons !== this.oldButtons){
+          const btnString = this.formatKeys(buttons);
+          this.game.setButtons(btnString);
+        }
+          
+        if(strafes)
+          this.game.setStrafes(`Strafes: ${strafes}\nSync: ${sync}`);
+
         this.currentFrame++;
     }
 
@@ -137,6 +168,11 @@ export class ReplayPlayer {
         this.state.cameraRot = interpolatedRot;
         updateGame(this.game, this.state);
     }
+}
+
+formatKeys(buttons: number): string {
+  return `${(buttons & IN_FORWARD ? "W" : "    ")}    ${(buttons & IN_JUMP ? "JUMP" : "         ")}\n` +
+         `${(buttons & IN_MOVELEFT ? "A" : "    ")}${(buttons & IN_BACK ? "S" : "    ")}${(buttons & IN_MOVERIGHT ? "D" : "    ")}    ${(buttons & IN_DUCK ? "DUCK" : "         ")}\n`;
 }
 
 slerp(a: number, b: number, dt: number): number {

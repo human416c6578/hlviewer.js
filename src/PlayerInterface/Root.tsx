@@ -14,6 +14,12 @@ interface RootProps {
 
 interface RootState {
   title: string
+  speed: string
+  fps: string
+  buttons: string
+  strafes: string
+  gravity: string
+
   isActive: boolean
   isLoading: boolean
   isMouseOver: boolean
@@ -28,11 +34,22 @@ export class Root extends Component<RootProps, RootState> {
   private offModeChange?: Unsubscribe
   private offTitleChange?: Unsubscribe
 
+  private offSpeedChange?: Unsubscribe
+  private offFpsChange?: Unsubscribe
+  private offButtonsChange?: Unsubscribe
+  private offStrafesChange?: Unsubscribe
+  private offGravityChange?: Unsubscribe
+
   constructor(props: RootProps) {
     super(props)
 
     this.state = {
       title: props.game.title,
+      speed: props.game.speed,
+      fps: props.game.fps,
+      buttons: props.game.buttons,
+      strafes: props.game.strafes,
+      gravity: '',
       isActive: false,
       isLoading: false,
       isMouseOver: false,
@@ -54,6 +71,12 @@ export class Root extends Component<RootProps, RootState> {
     this.offLoad = game.events.on('load', this.onLoadEnd)
     this.offModeChange = game.events.on('modechange', this.onModeChange)
     this.offTitleChange = game.events.on('titlechange', this.onTitleChange)
+
+    this.offSpeedChange = game.events.on('speedchange', this.onSpeedChange)
+    this.offFpsChange = game.events.on('fpschange', this.onFpsChange)
+    this.offButtonsChange = game.events.on('buttonschange', this.onButtonsChange)
+    this.offStrafesChange = game.events.on('strafeschange', this.onStrafesChange)
+    this.offGravityChange = game.events.on('gravitychange', this.onGravityChange)
 
     root.addEventListener('click', this.onRootClick)
     window.addEventListener('click', this.onWindowClick)
@@ -77,6 +100,13 @@ export class Root extends Component<RootProps, RootState> {
     this.offLoad && this.offLoad()
     this.offModeChange && this.onModeChange()
     this.offTitleChange && this.offTitleChange()
+
+    this.offSpeedChange && this.offSpeedChange()
+    this.offFpsChange && this.offFpsChange()
+    this.offButtonsChange && this.offButtonsChange()
+    this.offStrafesChange && this.offStrafesChange()
+    this.offGravityChange && this.offGravityChange()
+    
 
     root.removeEventListener('click', this.onRootClick)
     window.removeEventListener('click', this.onWindowClick)
@@ -202,6 +232,25 @@ export class Root extends Component<RootProps, RootState> {
     this.setState({ title })
   }
 
+  onSpeedChange = (speed: string) => {
+    this.setState({ speed })
+  }
+
+  onFpsChange = (fps: string) => {
+    this.setState({ fps })
+  }
+
+  onButtonsChange = (buttons: string) => {
+    this.setState({ buttons })
+  }
+
+  onStrafesChange = (strafes: string) => {
+    this.setState({ strafes })
+  }
+  onGravityChange = (gravity: string) => {
+    this.setState({ gravity })
+  }
+
   onMouseEnter = () => {
     this.setState({ isMouseOver: true })
     this.fadeReset()
@@ -264,23 +313,38 @@ export class Root extends Component<RootProps, RootState> {
   }
 
   render() {
-    const game = this.props.game
-    const isVisible = this.state.isVisible
+    const { game } = this.props;
+    const { isVisible, title, speed, fps, buttons, strafes, gravity, isLoading, isMouseOver } = this.state;
+
+    const isSpeedVisible = game.isSpeedVisible && speed;
+    const isFpsVisible = game.isFpsVisible && fps;
+    const isButtonsVisible = game.isButtonsVisible && buttons;
+    const isStrafesVisible = game.isStrafesVisible && buttons;
+    const imageSrc = `./img/${gravity}.png`; //
 
     return (
       <div class={isVisible ? s.rootVisible : s.root}>
         <div class={isVisible ? s.titleVisible : s.title}>
-          {this.state.title}
+          {title}
         </div>
 
-        <Loading game={game} visible={this.state.isLoading} />
+        <Loading game={game} visible={isLoading} />
 
         <div
           class={s.screen}
           ref={node => (this.node = node)}
           onClick={this.onScreenClick}
           onDblClick={this.onScreenDblClick}
-        />
+        >
+          {gravity? <img class={s.modelVisible} src={imageSrc}/>: ''}
+          <pre class={s.keysVisible}>
+            {isStrafesVisible ? `${strafes}\n\n` : ''}
+            {isButtonsVisible ? `${buttons}` : ''}
+            {isSpeedVisible ? `\n${speed} ups` : ''}
+            {isFpsVisible ? `\n${fps} fps` : ''}
+          </pre>
+
+        </div>
 
         {game.mode === PlayerMode.FREE ? (
           <FreeMode
@@ -293,10 +357,10 @@ export class Root extends Component<RootProps, RootState> {
             class={isVisible ? s.controlsVisible : s.controls}
             game={game}
             root={this.props.root}
-            visible={this.state.isMouseOver}
+            visible={isMouseOver}
           />
         )}
       </div>
-    )
+    );
   }
 }

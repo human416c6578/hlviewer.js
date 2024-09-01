@@ -33,6 +33,38 @@ export class SettingsButton extends Component<
     this.props.game.changeMode(PlayerMode.REPLAY)
   }
 
+  onSpeedModeClick = () => {
+    if (this.props.game.mode === PlayerMode.FREE) {
+      return
+    }
+
+    this.props.game.isSpeedVisible = !this.props.game.isSpeedVisible
+  }
+
+  onFpsModeClick = () => {
+    if (this.props.game.mode === PlayerMode.FREE) {
+      return
+    }
+
+    this.props.game.isFpsVisible = !this.props.game.isFpsVisible
+  }
+
+  onButtonsModeClick = () => {
+    if (this.props.game.mode === PlayerMode.FREE) {
+      return
+    }
+
+    this.props.game.isButtonsVisible = !this.props.game.isButtonsVisible
+  }
+
+  onStrafesModeClick = () => {
+    if (this.props.game.mode === PlayerMode.FREE) {
+      return
+    }
+
+    this.props.game.isStrafesVisible = !this.props.game.isStrafesVisible
+  }
+
   toggleMenu = () => {
     this.setState({ isOpen: !this.state.isOpen })
   }
@@ -54,6 +86,48 @@ export class SettingsButton extends Component<
         </div>
 
         <div class={this.state.isOpen ? s.menuOpen : s.menu}>
+           {/* Toggle Display Section */}
+           <span class={s.menuItemTitle}>Toggle Display</span>
+          <span
+            class={
+              this.props.game.isSpeedVisible === true
+                ? s.menuItemSelected
+                : s.menuItem
+            }
+            onClick={this.onSpeedModeClick}
+          >
+            Speed
+          </span>
+          <span
+            class={
+              this.props.game.isFpsVisible === true
+                ? s.menuItemSelected
+                : s.menuItem
+            }
+            onClick={this.onFpsModeClick}
+          >
+            Fps
+          </span>
+          <span
+            class={
+              this.props.game.isButtonsVisible === true
+                ? s.menuItemSelected
+                : s.menuItem
+            }
+            onClick={this.onButtonsModeClick}
+          >
+            Keys
+          </span>
+          <span
+            class={
+              this.props.game.isStrafesVisible === true
+                ? s.menuItemSelected
+                : s.menuItem
+            }
+            onClick={this.onStrafesModeClick}
+          >
+            Stats
+          </span>
           <span class={s.menuItemTitle}>Mode</span>
           {hasReplay ? (
             <span
