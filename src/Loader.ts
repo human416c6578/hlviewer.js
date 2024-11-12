@@ -191,8 +191,8 @@ export class Loader {
     const replayPath = this.config.getReplaysPath()
     const buffer = await xhr(`${replayPath}/${name}`, {
       method: 'GET',
-      // rec file is not binary
-      isBinary: false,
+      // rec file is binary
+      isBinary: true,
       progressCallback
     }).catch((err: any) => {
       if (this.replay) {

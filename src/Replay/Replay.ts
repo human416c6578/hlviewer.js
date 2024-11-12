@@ -1,5 +1,5 @@
 import { ReplayMap } from './ReplayMap'
-import { InfoFrame, ReplayCustomMap } from './ReplayCustomMap'
+import { ReplayCustomMap } from './ReplayCustomMap'
 import { ReplayChunk } from './ReplayChunk'
 import { ReplayState } from './ReplayState'
 import { Reader, ReaderDataType } from '../Reader'
@@ -539,47 +539,92 @@ export class Replay {
   }
 
 
-  static parseCustomFile(buffer: String) {
+  static parseCustomFile(buffer: ArrayBuffer) {
     const data = new ReplayCustomMap();
-    const lines = buffer.trim().split('\n');
+    const view = new DataView(buffer);  // DataView for binary reading
+    let offset = 0;
 
     // Parse header
-    const headerLine = lines.shift(); // Remove and get the first line
-    if (headerLine && headerLine.startsWith('HEADER')) {
-      const headerRegex = /"[^"]*"|\S+/g;
-      const matches = headerLine.match(headerRegex);
-      if (matches) {
-        let values = matches.map(match => match.replace(/"/g, ''));
-        data.header = {
-          identifier: values[1],
-          timestamp: values[2],
-          additionalInfo: values[3],
+    const getString = (length: number) => {
+        const chars = [];
+        for (let i = 0; i < length; i++) {
+            const charCode = view.getUint8(offset++);
+            if (charCode !== 0) chars.push(String.fromCharCode(charCode)); // Ignore null padding
+        }
+        return chars.join('');
+    };
+
+    // Read 32 bytes each for name, timestamp, and additional info
+    const identifier = getString(32);
+    const timestamp = getString(32);
+    const additionalInfo = getString(32);
+
+    data.header = {
+        identifier,
+        timestamp,
+        additionalInfo,
+    };
+    data.time = data.convertTimestamp(timestamp);
+
+    // Parse frame data
+    while (offset < buffer.byteLength) {
+        // Read origin (3 x int16), scaled by 5
+        const origin = [
+            view.getInt16(offset, true) / 5.0,
+            view.getInt16(offset + 2, true) / 5.0,
+            view.getInt16(offset + 4, true) / 5.0
+        ] as [number, number, number];
+        offset += 6;
+
+        // Read angles (2 x int16), scaled by 182
+        const rotation = [
+            view.getInt16(offset, true) / 182.0,  // Yaw
+            view.getInt16(offset + 2, true) / 182.0,  // Pitch
+            0.0  // Third angle not used
+        ] as [number, number, number];
+        offset += 4;
+
+        // Read speed (uint16)
+        const speed = view.getUint16(offset, true);
+        offset += 2;
+
+        // Read buttons (uint16)
+        const buttons = view.getUint16(offset, true);
+        offset += 2;
+
+        // Read packed byte for gravity and strafes
+        const packedByte = view.getUint8(offset++);
+        const gravity = (packedByte & 0x80) ? 1.0 : 0.5;
+        const strafes = packedByte & 0x7F;
+
+        // Read sync (uint8)
+        const sync = view.getUint8(offset++);
+
+        // Read FPS (int16)
+        const fps = view.getInt16(offset, true);
+        offset += 2;
+
+        // Reconstruct velocity based on speed (if applicable)
+        const velocity = [speed * 0.5, speed * 0.5, 0.0] as [number, number, number];
+
+        // Construct and add the frame to the data
+        const frame = {
+            origin,
+            rotation,
+            velocity,
+            buttons,
+            gravity,
+            fps,
+            strafes,
+            sync,
         };
-        data.time = data.convertTimestamp(values[2]);
-      }
+
+        data.addFrame(frame);
     }
 
-    // Parse frames
-    lines.forEach(line => {
-      if (line.startsWith('INFO')) {
-        const parts = line.split(/\s+/).slice(1); // Skip 'INFO' and split by whitespace
-        const frame: InfoFrame = {
-          origin: [parseFloat(parts[0]), parseFloat(parts[1]), parseFloat(parts[2])],
-          rotation: [parseFloat(parts[3]), parseFloat(parts[4]), parseFloat(parts[5])],
-          velocity: [parseFloat(parts[6]), parseFloat(parts[7]), parseFloat(parts[8])],
-          buttons: parseInt(parts[9], 10),
-          gravity: parseFloat(parts[10]),
-          fps: parseFloat(parts[11]),
-          strafes: parseInt(parts[12], 10),
-          sync: parseInt(parts[13], 10),
-        };
-        data.addFrame(frame);
-      }
-    });
+    return { data };
+}
 
-    return {data};
-   
-  }
 
   static parseIntoChunks(buffer: ArrayBuffer) {
     let r = new Reader(buffer)
