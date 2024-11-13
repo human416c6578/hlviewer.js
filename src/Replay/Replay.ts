@@ -585,7 +585,7 @@ export class Replay {
         offset += 4;
 
         // Read speed (uint16)
-        const speed = view.getUint16(offset, true);
+        const velocity = view.getUint16(offset, true);
         offset += 2;
 
         // Read buttons (uint16)
@@ -603,9 +603,6 @@ export class Replay {
         // Read FPS (int16)
         const fps = view.getInt16(offset, true);
         offset += 2;
-
-        // Reconstruct velocity based on speed (if applicable)
-        const velocity = [speed * 0.5, speed * 0.5, 0.0] as [number, number, number];
 
         // Construct and add the frame to the data
         const frame = {

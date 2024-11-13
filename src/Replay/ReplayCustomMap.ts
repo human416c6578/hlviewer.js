@@ -20,7 +20,7 @@ export interface Header {
 export interface InfoFrame {
   origin: [number, number, number];
   rotation: [number, number, number];
-  velocity: [number, number, number];
+  velocity: number;
   buttons: number;
   gravity: number;
   fps: number;

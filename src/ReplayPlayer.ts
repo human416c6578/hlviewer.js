@@ -129,7 +129,7 @@ export class ReplayPlayer {
 
         const currentFrameData = this.replay.data.frames[this.currentFrame];
         const { velocity, fps, buttons, strafes, sync, gravity } = currentFrameData;
-        const speed = Math.round(Math.sqrt(velocity[0] ** 2 + velocity[1] ** 2 + velocity[2] ** 2)).toString();
+        const speed = velocity.toString();
         
         
         this.game.setSpeed(speed);
