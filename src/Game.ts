@@ -104,7 +104,7 @@ export class Game {
   fps: string = ''
   buttons: string = ''
   strafes: string = ''
-  gravity: number = 1
+  gravity: boolean = true
 
   isSpeedVisible: boolean = true
   isFpsVisible: boolean = false
@@ -258,10 +258,10 @@ export class Game {
     this.events.emit('strafeschange', strafes)
   }
 
-  setGravity(gravity: number) {
+  setGravity(gravity: boolean) {
     this.gravity = gravity
     let gravityStr = '';
-    if(gravity === 1)
+    if(gravity === true)
       gravityStr = 'usp';
     else gravityStr = 'knife';
     this.events.emit('gravitychange', gravityStr)

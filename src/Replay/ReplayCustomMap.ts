@@ -12,20 +12,26 @@ export class Vector3 {
 }
 
 export interface Header {
-  identifier: string;
-  timestamp: string;
+  timestamp: bigint;
+  version: number;
+  map: string;
+  time: number;
+  name: string;
+  steamid: string;
   additionalInfo: string;
 }
 
 export interface InfoFrame {
+  timestamp: number;
   origin: [number, number, number];
-  rotation: [number, number, number];
-  velocity: number;
+  rotation: [number, number];
+  speed: number;
   buttons: number;
-  gravity: number;
   fps: number;
   strafes: number;
   sync: number;
+  grounded: boolean;
+  gravity: boolean;
 }
 
 export class ReplayCustomMap {
@@ -35,8 +41,8 @@ export class ReplayCustomMap {
   time: number;
 
   constructor() {
-    this.header = { identifier: '', timestamp: '', additionalInfo: '' }; // Initialize with default values
-    this.frames = []; // Initialize frames as an empty array
+    this.header = { timestamp: BigInt(0), version: 0, map: '', time: 0, name: '', steamid: '', additionalInfo: '' };
+    this.frames = [];
     this.length = 0
     this.time = 0;
   }
@@ -46,27 +52,4 @@ export class ReplayCustomMap {
     this.length += 1;
   }
 
-  convertTimestamp(timeString: string): number {
-    return parseTimeToMilliseconds(timeString);
-  }
-}
-
-function parseTimeToMilliseconds(timeString: string): number {
-  // Remove the trailing 's' if present
-  const cleanedString = timeString.replace('s', '');
-
-  // Split by the colon to separate minutes and seconds
-  const [minutesStr, secondsStr] = cleanedString.split(':');
-
-  // Extract minutes and seconds from the split parts
-  const minutes = parseInt(minutesStr, 10);
-  const [seconds, millisecondsStr] = secondsStr.split('.');
-
-  // Convert seconds and milliseconds to numbers
-  const secondsNumber = parseInt(seconds, 10);
-  const milliseconds = parseInt(millisecondsStr || '0', 10); // Default to 0 if millisecondsStr is undefined
-
-  // Calculate total milliseconds
-  const totalMilliseconds = (minutes * 60 * 1000) + (secondsNumber * 1000) + milliseconds;
-  return totalMilliseconds;
 }

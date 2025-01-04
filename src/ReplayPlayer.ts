@@ -3,14 +3,14 @@ import { createNanoEvents, Emitter as EventEmitter } from 'nanoevents'
 import { Game } from './Game'
 import { Replay } from './Replay/Replay'
 import { ReplayState } from './Replay/ReplayState'
-import { Vector3 } from './Replay/ReplayCustomMap'
+import { InfoFrame, Vector3 } from './Replay/ReplayCustomMap'
 
-const IN_JUMP = 1 << 1;
-const IN_DUCK = 1 << 2;
-const IN_FORWARD = 1 << 3;
-const IN_BACK = 1 << 4;
-const IN_MOVELEFT = 1 << 9;
-const IN_MOVERIGHT = 1 << 10;
+const IN_JUMP = 1 << 0;
+const IN_DUCK = 1 << 1;
+const IN_FORWARD = 1 << 2;
+const IN_BACK = 1 << 3;
+const IN_MOVELEFT = 1 << 4;
+const IN_MOVERIGHT = 1 << 5;
 
 
 const updateGame = (game: Game, state: ReplayState) => {
@@ -29,7 +29,7 @@ export class ReplayPlayer {
   events: EventEmitter
 
   oldButtons: number = 0
-  oldGravity: number = 0
+  oldGravity: boolean = false
 
   prevFrame: number = 0
   nextFrame: number = 0
@@ -51,6 +51,20 @@ export class ReplayPlayer {
     this.events = createNanoEvents()
   }
 
+  msToFullTime(ms: number): string {
+    const seconds = Math.floor(ms / 1000);
+    const milliseconds = ms % 1000;
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+  
+    // Format hours, minutes, seconds, and milliseconds
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(remainingSeconds).padStart(2, '0');
+    const msStr = String(milliseconds).padStart(3, '0');
+  
+    return `${mm}:${ss}.${msStr}`;
+  }
+
   reset() {
     this.nextFrame = 0
     this.prevFrame = 0
@@ -65,8 +79,9 @@ export class ReplayPlayer {
     this.speed = 1
 
     if (this.replay) {
-      this.game.setTitle(this.replay.data.header.identifier + " " + this.replay.data.header.timestamp + " " + this.replay.data.header.additionalInfo);
-      let firstFrame = this.replay.data.frames[0]
+      this.game.setTitle(this.replay.data.header.name + " " + this.replay.data.header.additionalInfo + " " + this.msToFullTime(this.replay.data.header.time));
+      let firstFrame: InfoFrame = this.replay.data.frames[0]
+      
       let state = new ReplayState();
       state.cameraPos = firstFrame.origin
       state.cameraRot = firstFrame.rotation
@@ -119,23 +134,26 @@ export class ReplayPlayer {
 
     this.currentTime += dt;
     const frameDuration = this.frameTime;
+
     this.timeOffset += dt;
 
     if (this.timeOffset >= frameDuration) {
-        this.timeOffset -= frameDuration;
+        this.timeOffset = this.timeOffset - frameDuration;
 
         this.prevFrame = this.currentFrame;
         this.nextFrame = this.currentFrame + 1;
 
-        const currentFrameData = this.replay.data.frames[this.currentFrame];
-        const { velocity, fps, buttons, strafes, sync, gravity } = currentFrameData;
-        const speed = velocity.toString();
+        const currentFrameData : InfoFrame = this.replay.data.frames[this.currentFrame];
+        const { timestamp, speed, fps, buttons, strafes, sync, gravity } = currentFrameData;
+
+        if(timestamp > 0)
+          this.frameTime = timestamp / 1000.0;
         
-        
-        this.game.setSpeed(speed);
-        this.game.setFps(fps);
+        this.game.setSpeed(speed.toString());
+        this.game.setFps(fps.toString());
 
         if(gravity !== this.oldGravity){
+          this.oldGravity = gravity;
           this.game.setGravity(gravity)
         }
 
@@ -147,11 +165,12 @@ export class ReplayPlayer {
         if(strafes)
           this.game.setStrafes(`Strafes: ${strafes}\nSync: ${sync}`);
 
+
         this.currentFrame++;
     }
-
     if (this.currentFrame > 0) {
-        const t = this.timeOffset / frameDuration;
+        const t = this.timeOffset / frameDuration > 1.0 ? 1.0 : this.timeOffset / frameDuration;
+  
         const prevFrameData = this.replay.data.frames[this.prevFrame];
         const nextFrameData = this.replay.data.frames[this.nextFrame];
 
@@ -161,13 +180,12 @@ export class ReplayPlayer {
 
         interpolatedRot[0] = this.slerp(prevFrameData.rotation[0], nextFrameData.rotation[0], t);
         interpolatedRot[1] = this.slerp(prevFrameData.rotation[1], nextFrameData.rotation[1], t);
-        interpolatedRot[2] = this.slerp(prevFrameData.rotation[2], nextFrameData.rotation[2], t);
-
 
         this.state.cameraPos = interpolatedPos.vec;
         this.state.cameraRot = interpolatedRot;
         updateGame(this.game, this.state);
     }
+    
 }
 
 formatKeys(buttons: number): string {

@@ -1,5 +1,5 @@
 import { ReplayMap } from './ReplayMap'
-import { ReplayCustomMap } from './ReplayCustomMap'
+import { InfoFrame, ReplayCustomMap } from './ReplayCustomMap'
 import { ReplayChunk } from './ReplayChunk'
 import { ReplayState } from './ReplayState'
 import { Reader, ReaderDataType } from '../Reader'
@@ -554,73 +554,185 @@ export class Replay {
         return chars.join('');
     };
 
-    // Read 32 bytes each for name, timestamp, and additional info
-    const identifier = getString(32);
-    const timestamp = getString(32);
+    const timestamp = view.getBigInt64(offset, true);
+    offset += 8;
+    const version = view.getUint16(offset);
+    offset += 2;
+    const map = getString(32);
+
+    const time = (view.getUint8(offset) << 16) |
+                 (view.getUint8(offset + 1) << 8) |
+                 view.getUint8(offset + 2);
+    offset += 3;
+
+    const name = getString(32);
+    const steamid = getString(24);
     const additionalInfo = getString(32);
 
     data.header = {
-        identifier,
         timestamp,
-        additionalInfo,
+        version,
+        map,
+        time,
+        name,
+        steamid,
+        additionalInfo
     };
-    data.time = data.convertTimestamp(timestamp);
+
+    data.time = time;
+
+    console.log(data.header);
+
+    let prevFrame: InfoFrame | null = null;
 
     // Parse frame data
     while (offset < buffer.byteLength) {
-        // Read origin (3 x int16), scaled by 5
-        const origin = [
-            view.getInt16(offset, true) / 5.0,
-            view.getInt16(offset + 2, true) / 5.0,
-            view.getInt16(offset + 4, true) / 5.0
-        ] as [number, number, number];
-        offset += 6;
+      const flags = (view.getUint8(offset) << 16) |
+                    (view.getUint8(offset + 1) << 8) |
+                    view.getUint8(offset + 2);
+      offset += 3;
 
-        // Read angles (2 x int16), scaled by 182
-        const rotation = [
-            view.getInt16(offset, true) / 182.0,  // Yaw
-            view.getInt16(offset + 2, true) / 182.0,  // Pitch
-            0.0  // Third angle not used
-        ] as [number, number, number];
-        offset += 4;
+      const frame: InfoFrame = {
+        timestamp: 0,
+        origin: [0, 0, 0],
+        rotation: [0, 0],
+        speed: 0,
+        buttons: 0,
+        fps: 0,
+        strafes: 0,
+        sync: 0,
+        grounded: false,
+        gravity: false,
+      };
 
-        // Read speed (uint16)
-        const velocity = view.getUint16(offset, true);
+      if (!prevFrame) {
+        // First frame decoding (no previous frame)
+        frame.timestamp = view.getUint8(offset++);
+
+        // Decode origin components (3 components, 2 bytes each)
+        for (let i = 0; i < 3; i++) {
+          frame.origin[i] = view.getInt16(offset, false) / 4; // Little-endian
+          offset += 2;
+        }
+
+        // Decode angles (yaw and pitch, 2 bytes each)
+        for (let i = 0; i < 2; i++) {
+          frame.rotation[i] = view.getInt16(offset, false) / 5;
+          offset += 2;
+        }
+
+        // Decode speed
+        frame.speed = view.getInt16(offset, false);
         offset += 2;
 
-        // Read buttons (uint16)
-        const buttons = view.getUint16(offset, true);
-        offset += 2;
-
-        // Read packed byte for gravity and strafes
-        const packedByte = view.getUint8(offset++);
-        const gravity = (packedByte & 0x80) ? 1.0 : 0.5;
-        const strafes = packedByte & 0x7F;
-
-        // Read sync (uint8)
-        const sync = view.getUint8(offset++);
-
-        // Read FPS (int16)
-        const fps = view.getInt16(offset, true);
-        offset += 2;
-
-        // Construct and add the frame to the data
-        const frame = {
-            origin,
-            rotation,
-            velocity,
-            buttons,
-            gravity,
-            fps,
-            strafes,
-            sync,
-        };
+        // Decode buttons and other attributes
+        frame.buttons = view.getUint8(offset++);
+        frame.fps = view.getUint8(offset++) * 4;
+        frame.strafes = view.getUint8(offset++);
+        frame.sync = view.getUint8(offset++);
+        frame.grounded = !!(flags & (1 << 11));
+        frame.gravity = !!(flags & (1 << 12));
 
         data.addFrame(frame);
+
+        prevFrame = frame;
+
+        continue;
+      }
+
+      const rleFlag = !!(flags & (1 << 0));
+      if (rleFlag && prevFrame) {
+          Object.assign(frame, prevFrame); // Copy previous frame values
+          continue;
+      }
+
+       // Decode delta for timestamp
+      const delta = view.getInt8(offset++);
+      frame.timestamp = prevFrame.timestamp + delta;
+
+      // Decode origin values based on flags
+      for (let i = 0; i < 3; i++) {
+        const fullValue = !!(flags & (1 << (i + 1)));
+        if (fullValue) {
+          // Full 2-byte value
+          frame.origin[i] = prevFrame.origin[i] + view.getInt16(offset, false) / 4;
+          offset += 2;
+        } else {
+          // 1-byte delta
+          const delta = view.getInt8(offset++) / 4;
+          frame.origin[i] = prevFrame.origin[i] + delta;
+        }
+      }
+    
+      // Decode angle values based on flags
+      for (let i = 0; i < 2; i++) {
+        const fullValue = !!(flags & (1 << (i + 4)));
+        if (fullValue) {
+          // Full 2-byte value
+          frame.rotation[i] = (prevFrame.rotation[i] + view.getInt16(offset, false) / 5) % 360; // Clamp angles
+          offset += 2;
+        } else {
+          // 1-byte delta
+          const delta = view.getInt8(offset++) / 5;
+          frame.rotation[i] = (prevFrame.rotation[i] + delta) % 360; // Clamp angles
+        }
+      }
+    
+      // Decode speed based on flags
+      const speedFullValue = !!(flags & (1 << 6));
+      if (speedFullValue) {
+        frame.speed = prevFrame.speed + view.getInt16(offset, false);
+        offset += 2;
+      } else {
+        const delta = view.getInt8(offset++);
+        frame.speed = prevFrame.speed + delta;
+      }
+    
+      // Decode buttons if changed
+      const buttonsChanged = !!(flags & (1 << 7));
+      if (buttonsChanged) {
+        frame.buttons = view.getUint8(offset++);
+      } else {
+        frame.buttons = prevFrame.buttons;
+      }
+    
+      // Decode fps if changed
+      const fpsChanged = !!(flags & (1 << 8));
+      if (fpsChanged) {
+        frame.fps = view.getUint8(offset++) * 4;
+      } else {
+        frame.fps = prevFrame.fps;
+      }
+    
+      // Decode strafes if changed
+      const strafesChanged = !!(flags & (1 << 9));
+      if (strafesChanged) {
+        frame.strafes = view.getUint8(offset++);
+      } else {
+        frame.strafes = prevFrame.strafes;
+      }
+    
+      // Decode sync if changed
+      const syncChanged = !!(flags & (1 << 10));
+      if (syncChanged) {
+        frame.sync = view.getUint8(offset++);
+      } else {
+        frame.sync = prevFrame.sync;
+      }
+    
+      // Decode grounded and gravity flags
+      frame.grounded = !!(flags & (1 << 11));
+      frame.gravity = !!(flags & (1 << 12));
+    
+      // Add the parsed frame to the data
+      data.addFrame(frame);
+    
+      // Update the previous frame
+      prevFrame = frame;
     }
 
     return { data };
-}
+  }
 
 
   static parseIntoChunks(buffer: ArrayBuffer) {
